@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Прогноз погоды 🌦️</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- Фон карты -->
+<div class="background-map"></div>
+<div class="background-gradient"></div>
+<canvas id="effectsCanvas"></canvas>
+
+<!-- Верхние кнопки -->
+<div class="top-buttons">
+    <button id="changeLang" class="btn-small">🌐 RU</button>
+    <a href="{{ url_for('history') }}" class="btn-small btn-history">🕘 История</a>
+</div>
+
+
+<div class="container">
+    <h1 id="title">🌩️ Прогноз погоды</h1>
+
+    <form id="cityForm" method="POST" class="d-flex justify-content-center mb-4" style="margin-top: 20px;">
+        <input type="text" name="city" placeholder="Введите город..." class="form-control w-50" required>
+        <button type="submit" class="btn ms-2" id="showBtn">Показать</button>
+    </form>
+
+    {% if weather %}
+        {% if weather.error %}
+            <div class="alert alert-danger w-50 mx-auto" id="errorMsg">{{ weather.error }}</div>
+        {% else %}
+            <div class="card current-weather fade-in">
+                <h3 id="cityName">{{ weather.city }}, {{ weather.country }}</h3>
+                <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png">
+                <h2 id="temp">{{ weather.temp }}°C</h2>
+                <p id="desc">{{ weather.desc }}</p>
+                <p id="feels_like">Ощущается как: {{ weather.feels_like }}°C</p>
+                <p id="humidity">💧 Влажность: {{ weather.humidity }}%</p>
+                <p id="wind">🌬️ Ветер: {{ weather.wind }} м/с</p>
+            </div>
+
+            {% if forecast %}
+                <h3 class="mt-5 mb-3" id="forecastTitle">📅 Прогноз на 5 дней</h3>
+                <div class="forecast-container">
+                    {% for f in forecast %}
+                    <div class="small-card fade-in">
+                        <p><strong>{{ f.date }}</strong></p>
+                        <img src="https://openweathermap.org/img/wn/{{ f.icon }}.png">
+                        <p>{{ f.temp }}°C</p>
+                        <small>{{ f.desc }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <canvas id="forecastChart" width="600" height="300"></canvas>
+                <script>
+                    const ctx = document.getElementById('forecastChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [{% for f in forecast %}'{{ f.date }}',{% endfor %}],
+                            datasets: [{
+                                label: 'Температура, °C',
+                                data: [{% for f in forecast %}{{ f.temp }},{% endfor %}],
+                                fill: true,
+                                borderColor: '#ff6a00',
+                                backgroundColor: 'rgba(255,106,0,0.3)',
+                                tension: 0.5,
+                                pointRadius: 6,
+                            }]
+                        },
+                        options: { responsive: true }
+                    });
+                </script>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</div>
+
+<script src="{{ url_for('static', filename='effects.js') }}"></script>
+<script src="{{ url_for('static', filename='buttons.js') }}"></script>
+<script>
+    const mainWeather = "{{ mainWeather }}"; 
+    applyWeatherFromAPI(mainWeather);       
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <
